@@ -105,8 +105,9 @@ generic_t* alloc(size_t reqSize)
 	return segment->data;
 }
 
-void free(generic_t* space)
+void free(void* space1)
 {
+	generic_t* space = reinterpret_cast<generic_t*>(space1);
 	auto segment = getHeader(space);
 	segment->dirty = false;
 	if(segmentListHead==nullptr)
@@ -130,7 +131,7 @@ void init(SearchMode mode)
 	searchMode = mode;
 }
 
-//driver code
+// driver code
 int main()
 {
 	auto p1 = alloc(8);
@@ -139,6 +140,40 @@ int main()
 	auto p2 = alloc(8);
 	auto p2Segment = getHeader(p2);
 	assert(p1Segment == p2Segment);
+	auto pp = alloc(sizeof(int)*10);
+	int *p = (int*)(pp);
 	
+	for(int i=0;i<10;i++)
+		p[i] = i*10;
+	for(int i=0;i<10;i++)
+		std::cout<<p[i]<<std::endl;
+	free(p);
 	return 0;
 }
+
+// // driver code for using custom allocator with STL
+// #include <vector>
+// template <class T>
+// struct custom_allocator {
+//   typedef T value_type;
+//   custom_allocator() noexcept {}
+//   template <class U> custom_allocator (const custom_allocator<U>&) noexcept {}
+//   T* allocate (std::size_t n) { return reinterpret_cast<T*>(alloc(n*sizeof(T))); }
+//   void deallocate (T* p, std::size_t n) { free(p); }
+// };
+
+// template <class T, class U>
+// constexpr bool operator== (const custom_allocator<T>&, const custom_allocator<U>&) noexcept
+// {return true;}
+
+// template <class T, class U>
+// constexpr bool operator!= (const custom_allocator<T>&, const custom_allocator<U>&) noexcept
+// {return false;}
+
+
+// int main () {
+//   std::vector<int,custom_allocator<int>> foo = {10,20,30};
+//   for (auto x: foo) std::cout << x << " ";
+//   std::cout <<"\n";
+//   return 0;
+// }

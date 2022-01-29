@@ -1,4 +1,4 @@
-using generic_t = intptr_t;
+using generic_t = void*;
 class MemorySegment
 {
 public:
